@@ -48,7 +48,7 @@ httrack https://example.com -O ./output
 
 # 推荐用法（控制深度和连接数）
 httrack https://www.laravelactions.com \
-  -O ./laravelactions_site \  # 输出目录
+  -O ./laravelactions_site \ 
   -%v \                       
   -c4 \                      
   -r3 \                       
