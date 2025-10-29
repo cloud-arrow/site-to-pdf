@@ -44,21 +44,16 @@ brew install httrack           # macOS
 
 ```bash
 # 基本用法
-httrack https://example.com -O ./output
+httrack https://example.com -O ./sites/example
 
 # 推荐用法（控制深度和连接数）
-httrack https://www.laravelactions.com \
-  -O ./laravelactions_site \ 
-  -%v \                       
-  -c4 \                      
-  -r3 \                       
-  +*.laravelactions.com/* \   
-  -s0                         
+httrack https://www.laravelactions.com -O ./sites/laravelactions -r3 -c10 -s0 "+*.laravelactions.com/*"
 ```
 
 **重要参数说明：**
+- `-O ./sites/xxx`: 输出到 sites 目录下的子目录
 - `-r3`: 递归深度 3 层，太深会抓取过多页面，太浅会遗漏内容
-- `-c4`: 4 个并发连接，平衡速度和服务器负载
+- `-c10`: 10 个并发连接，平衡速度和服务器负载
 - `+*.domain.com/*`: 限制只抓取指定域名，避免跟随外部链接
 - `-s0`: 不抓取外部样式表的外部资源
 
@@ -66,16 +61,16 @@ httrack https://www.laravelactions.com \
 
 ```bash
 # 基本用法
-python3 site_to_pdf.py ./output/www.example.com -o website.pdf
+python3 site_to_pdf.py ./sites/example/www.example.com -o example.pdf
 
-# 使用所有选项
-python3 site_to_pdf.py \
-  ./laravelactions_site/www.laravelactions.com \
-  -o laravelactions.pdf \        # 输出文件名
-  -b chromium \                  # 浏览器类型
-  --max-pages 100 \              # 限制最多转换 100 页
-  --no-toc \                     # 不生成目录页
-  --keep-sidebar                 # 保留侧边栏（默认隐藏）
+# 完整示例
+python3 site_to_pdf.py ./sites/laravelactions/www.laravelactions.com -o laravelactions.pdf
+
+# 使用更多选项
+python3 site_to_pdf.py ./sites/example/www.example.com -o site.pdf -b chromium --max-pages 100 --no-toc
+
+# 保留侧边栏
+python3 site_to_pdf.py ./sites/example/www.example.com -o site.pdf --keep-sidebar
 ```
 
 ## 🎛️ 命令行选项
@@ -95,50 +90,31 @@ python3 site_to_pdf.py \
 
 ```bash
 # 1. 抓取网站
-httrack https://www.laravelactions.com \
-  -O ./laravelactions_site \
-  -r3 -c10 -s0 \
-  +*.laravelactions.com/*
-
-# 抓取结果:
-# - HTML 页面: 43 个（过滤掉 404 页面后）
-# - 数据量: ~4 MB
+httrack https://www.laravelactions.com -O ./sites/laravelactions -r3 -c10 -s0 "+*.laravelactions.com/*"
 
 # 2. 转换为 PDF
-python3 site_to_pdf.py \
-  ./laravelactions_site/www.laravelactions.com \
-  -o laravelactions.pdf
-
-# 转换结果:
-# - 页数: 127 页
-# - 文件大小: ~7 MB
-# - 包含: 层级目录 + 43 个文档页面
+python3 site_to_pdf.py ./sites/laravelactions/www.laravelactions.com -o laravelactions.pdf
 ```
+
+**结果：**
+- 抓取：43 个 HTML 页面（过滤掉 404 页面后）
+- PDF：127 页，文件大小 ~7 MB
+- 包含：层级目录 + 43 个文档页面
 
 ### 测试案例 2: Browsertrix Crawler 文档
 
 ```bash
 # 1. 抓取网站
-httrack https://crawler.docs.browsertrix.com/ \
-  -O browsertrix_site \
-  -r3 -c10 -s0 \
-  +crawler.docs.browsertrix.com/*
-
-# 抓取结果:
-# - 用时: 14 秒
-# - 文件数: 24 个
-# - HTML 页面: 15 个
+httrack https://crawler.docs.browsertrix.com/ -O ./sites/browsertrix -r3 -c10 -s0 "+crawler.docs.browsertrix.com/*"
 
 # 2. 转换为 PDF
-python3 site_to_pdf.py \
-  ./browsertrix_site/crawler.docs.browsertrix.com \
-  -o browsertrix.pdf
-
-# 转换结果:
-# - 页数: 约 40 页
-# - 文件大小: 3.7 MB
-# - 包含: 层级目录 + 15 个文档页面
+python3 site_to_pdf.py ./sites/browsertrix/crawler.docs.browsertrix.com -o browsertrix.pdf
 ```
+
+**结果：**
+- 抓取：14 秒，15 个 HTML 页面
+- PDF：约 40 页，文件大小 3.7 MB
+- 包含：层级目录 + 15 个文档页面
 
 ## 🎨 转换后的 PDF 特点
 
@@ -170,35 +146,26 @@ python3 site_to_pdf.py \
 ### 自定义浏览器
 
 ```bash
-# 使用 Firefox
-python3 site_to_pdf.py ./output -o site.pdf -b firefox
-
-# 使用 WebKit
-python3 site_to_pdf.py ./output -o site.pdf -b webkit
+python3 site_to_pdf.py ./sites/example/www.example.com -o site.pdf -b firefox
+python3 site_to_pdf.py ./sites/example/www.example.com -o site.pdf -b webkit
 ```
 
 ### 限制页面数量
 
-适用于大型网站，只转换前 N 个页面：
-
 ```bash
-python3 site_to_pdf.py ./output -o site.pdf --max-pages 50
+python3 site_to_pdf.py ./sites/example/www.example.com -o site.pdf --max-pages 50
 ```
 
 ### 不生成目录
 
-如果不需要目录页：
-
 ```bash
-python3 site_to_pdf.py ./output -o site.pdf --no-toc
+python3 site_to_pdf.py ./sites/example/www.example.com -o site.pdf --no-toc
 ```
 
 ### 保留侧边栏
 
-如果想保留网站原有的侧边栏和导航栏：
-
 ```bash
-python3 site_to_pdf.py ./output -o site.pdf --keep-sidebar
+python3 site_to_pdf.py ./sites/example/www.example.com -o site.pdf --keep-sidebar
 ```
 
 ## 🔧 故障排除
@@ -215,13 +182,14 @@ python3 site_to_pdf.py ./output -o site.pdf --keep-sidebar
 
 ### 问题 2: PDF 文件太大
 
-**解决方案**:
-```bash
-# 使用 --max-pages 限制页面数
-python3 site_to_pdf.py ./output -o site.pdf --max-pages 30
+**解决方案：**
 
-# HTTrack 抓取时使用 -s0 不抓取外部资源
-httrack https://example.com -O ./output -s0
+```bash
+# 限制页面数
+python3 site_to_pdf.py ./sites/example/www.example.com -o site.pdf --max-pages 30
+
+# HTTrack 抓取时不抓取外部资源
+httrack https://example.com -O ./sites/example -s0
 ```
 
 ### 问题 3: 表格或代码内容被截断
@@ -241,18 +209,16 @@ httrack https://example.com -O ./output -s0
 
 ### 问题 4: 页面顺序不正确
 
-**解决方案**:
-脚本会自动从首页的侧边栏提取正确顺序。如果顺序仍不对：
+**解决方案：**
 - 确保 HTTrack 完整抓取了首页 (`index.html`)
 - 检查首页是否包含侧边栏导航
-- 手动检查 `page_info` 中的链接关系
+- 脚本会自动从侧边栏提取正确顺序
 
 ### 问题 5: 某些页面内容缺失
 
-**解决方案**:
-如果是动态内容：
-- 增加等待时间（脚本中 `asyncio.sleep(1.5)` 可以调大）
+**解决方案：**
 - 确保 HTTrack 抓取了所有必需的 JavaScript 文件
+- 动态内容可能需要增加等待时间（修改脚本中的 `asyncio.sleep` 值）
 
 ## 📝 目录结构
 
@@ -260,17 +226,19 @@ httrack https://example.com -O ./output -s0
 sitetopdf/
 ├── site_to_pdf.py              # 主脚本
 ├── install_dependencies.sh     # 依赖安装脚本
-├── README.md                   # 项目说明
-├── USAGE.md                    # 本文件：详细使用指南
+├── .gitignore                  # Git 忽略配置
+├── README.md                   # 本文档
 ├── CHANGELOG.md                # 更新日志
 ├── TEST_RESULTS.md             # 测试结果
 ├── httrack.md                  # HTTrack 使用说明
-├── browsertrix_site/           # 示例：HTTrack 抓取结果
-│   └── crawler.docs.browsertrix.com/
-│       ├── index.html
-│       ├── user-guide/
-│       └── ...
-└── browsertrix_fixed.pdf       # 示例：生成的 PDF
+└── sites/                      # HTTrack 抓取的网站目录
+    ├── .gitkeep                # Git 占位文件
+    ├── laravelactions/         # 示例：Laravel Actions 文档
+    │   └── www.laravelactions.com/
+    └── browsertrix/            # 示例：Browsertrix 文档
+        └── crawler.docs.browsertrix.com/
+
+注：sites/ 目录下的网站内容会被 git 忽略，不会提交到仓库
 ```
 
 ## 💡 最佳实践
@@ -285,7 +253,7 @@ sitetopdf/
 
 始终添加域名过滤，避免跟随外部链接：
 ```bash
-httrack https://example.com +*.example.com/*
+httrack https://example.com -O ./sites/example "+*.example.com/*"
 ```
 
 ### 3. 控制并发数
@@ -298,7 +266,7 @@ httrack https://example.com +*.example.com/*
 
 转换大型网站前，先用 `--max-pages 10` 测试：
 ```bash
-python3 site_to_pdf.py ./output -o test.pdf --max-pages 10
+python3 site_to_pdf.py ./sites/example/www.example.com -o test.pdf --max-pages 10
 ```
 
 ### 5. 内容完整性 vs 美观度
