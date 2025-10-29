@@ -49,11 +49,11 @@ httrack https://example.com -O ./output
 # 推荐用法（控制深度和连接数）
 httrack https://www.laravelactions.com \
   -O ./laravelactions_site \  # 输出目录
-  -%v \                       # 显示详细日志
-  -c4 \                       # 4 个并发连接
-  -r3 \                       # 递归深度为 3
-  +*.laravelactions.com/* \   # 只抓取该域名
-  -s0                         # 不抓取外部资源
+  -%v \                       
+  -c4 \                      
+  -r3 \                       
+  +*.laravelactions.com/* \   
+  -s0                         
 ```
 
 **重要参数说明：**
